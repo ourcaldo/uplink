@@ -144,11 +144,19 @@ body {
   justify-content: center;
   align-items: center;
   gap: 10px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
 }
 
 .inline-smartlink {
   display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.actions .primary-btn,
+.actions .smartlink-btn {
+  white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 .ad-slot {
@@ -180,5 +188,15 @@ body {
 
   .side-rail {
     position: static;
+  }
+
+  .actions {
+    gap: 8px;
+  }
+
+  .actions .primary-btn,
+  .actions .smartlink-btn {
+    padding: 10px 12px;
+    font-size: 14px;
   }
 }
