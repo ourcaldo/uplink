@@ -239,6 +239,18 @@ function isIframeFormatAd(string $adCode): bool
         || strpos($adCode, '"format" : "iframe"') !== false;
 }
 
+function isSmartlinkAd(string $adCode): bool
+{
+    return stripos($adCode, 'profitablecpmratenetwork.com') !== false
+        && stripos($adCode, '<a ') !== false;
+}
+
+function isPopunderAd(string $adCode): bool
+{
+    return stripos($adCode, 'pl28941074.profitablecpmratenetwork.com') !== false
+        || stripos($adCode, 'pl28941079.profitablecpmratenetwork.com') !== false;
+}
+
 function buildPageAds(array $gateAdsPool, array $adsensePool): array
 {
     $nonAdsense = array_values(array_filter($gateAdsPool, static function ($adCode): bool {
@@ -246,14 +258,32 @@ function buildPageAds(array $gateAdsPool, array $adsensePool): array
     }));
 
     $nonDisplayAds = [];
+    $randomizedScriptAds = [];
+    $smartlinkAds = [];
     $displayAds = [];
     foreach ($nonAdsense as $adCode) {
+        if (isSmartlinkAd((string) $adCode)) {
+            $smartlinkAds[] = $adCode;
+            continue;
+        }
+
         if (isIframeFormatAd((string) $adCode)) {
             $displayAds[] = $adCode;
             continue;
         }
 
+        if (isPopunderAd((string) $adCode)) {
+            $randomizedScriptAds[] = $adCode;
+            continue;
+        }
+
         $nonDisplayAds[] = $adCode;
+    }
+
+    $smartlinkAd = '';
+    if (count($smartlinkAds) > 0) {
+        shuffle($smartlinkAds);
+        $smartlinkAd = (string) ($smartlinkAds[0] ?? '');
     }
 
     $vertical = [];
@@ -308,8 +338,11 @@ function buildPageAds(array $gateAdsPool, array $adsensePool): array
         $usedCount++;
     }
 
+    $contentCandidates = array_merge($content, $vertical, $randomizedScriptAds);
+    shuffle($contentCandidates);
+
     $contentPool = [];
-    foreach (array_merge($content, $vertical) as $adCode) {
+    foreach ($contentCandidates as $adCode) {
         if (!isset($used[$adCode])) {
             $contentPool[] = $adCode;
         }
@@ -366,6 +399,7 @@ function buildPageAds(array $gateAdsPool, array $adsensePool): array
 
     return [
         'nonDisplay' => $nonDisplayAds,
+        'smartlink' => $smartlinkAd,
         'leftSidebar' => $leftSidebar,
         'rightSidebar' => $rightSidebar,
         'slots' => $slots,

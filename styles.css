@@ -140,7 +140,15 @@ body {
 }
 
 .actions {
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.inline-smartlink {
+  display: inline-flex;
 }
 
 .ad-slot {

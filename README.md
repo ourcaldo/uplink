@@ -27,6 +27,8 @@ This project implements a looping two-step gate flow:
 - Small banner stacking: when a selected banner is small, an additional ad can be stacked in the same slot if capacity remains.
 - Global Adsense: rendered separately and not counted in the 5-ad non-Adsense limit.
 - Non-display ads: gate-specific ad codes without iframe format are also rendered on each page (outside the display-banner cap).
+- Smartlink placement: rendered beside the next-gate button in the bottom action section.
+- Popunder behavior: included in randomized slot mixing so it does not appear on every page load.
 
 ## Notes About Traffic Filtering
 

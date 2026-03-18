@@ -116,6 +116,9 @@ $pageTitle = (string) $article['title'] . ' | ' . $gateTitle;
 
                 <section class="actions">
                     <a class="primary-btn" href="<?php echo safeText($nextUrl); ?>"><?php echo safeText($nextGateLabel); ?></a>
+                    <?php if (($pageAds['smartlink'] ?? '') !== ''): ?>
+                        <div class="inline-smartlink"><?php echo $pageAds['smartlink']; ?></div>
+                    <?php endif; ?>
                 </section>
 
                 <section class="ad-slot ad-bottom">
