@@ -13,13 +13,13 @@ This project implements a looping two-step gate flow:
 - elco.php: Legacy endpoint redirecting to /
 - lib/config.php: Gate URLs and ad inventories
 - lib/functions.php: Traffic filter, article catalog/slug helpers, random ad slot selection
-- content/articles/: Local markdown article library (10 randomizable articles)
+- content/legal-articles/: Local markdown article library (10 randomizable legal articles)
 - .htaccess: Apache rewrite rules for slug routing
 - styles.css: Shared styling
 
 ## How Randomization Works
 
-- Article: loaded from local markdown files in content/articles.
+- Article: loaded from local markdown files in content/legal-articles.
 - URL format: each article is shown on /{slug}.
 - Loop behavior: gate 1 -> gate 2 -> gate 1, with the next slug randomized and different from the current article.
 - Ads: each page uses mandatory left and right sidebar ads (vertical when available).

@@ -53,6 +53,8 @@ if (!is_array($nextArticle)) {
 $nextUrl = rtrim($nextGateUrl, '/') . '/' . rawurlencode($nextArticle['slug']) . '?prev=' . rawurlencode((string) $article['slug']);
 
 $pageAds = buildPageAds($adsByGate[$gate], $adsenseAds);
+$gateTitle = ($gate === 'alco') ? 'Gate 1' : 'Gate 2';
+$pageTitle = (string) $article['title'] . ' | ' . $gateTitle;
 
 ?>
 <!doctype html>
@@ -60,14 +62,16 @@ $pageAds = buildPageAds($adsByGate[$gate], $adsenseAds);
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?php echo ($gate === 'alco') ? 'UPlink Gate 1' : 'UPlink Gate 2'; ?></title>
+    <title><?php echo safeText($pageTitle); ?></title>
+    <meta name="title" content="<?php echo safeText($pageTitle); ?>">
+    <meta property="og:title" content="<?php echo safeText($pageTitle); ?>">
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
     <main class="page-wrap">
         <header class="hero">
             <p class="badge"><?php echo safeText($host); ?></p>
-            <h1><?php echo ($gate === 'alco') ? 'Gate 1' : 'Gate 2'; ?></h1>
+            <h1><?php echo safeText($gateTitle); ?></h1>
             <p>Article path: /<?php echo safeText((string) $article['slug']); ?></p>
         </header>
 
