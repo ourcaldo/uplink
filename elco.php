@@ -32,8 +32,8 @@ $adSlots = pickAdSlots($adsByGate['elco']);
 
         <article class="article-card">
             <h2><?php echo safeText($article['title']); ?></h2>
-            <p><?php echo safeText($article['summary']); ?></p>
-            <a class="article-link" href="<?php echo safeText($article['url']); ?>" target="_blank" rel="noopener noreferrer">Read full article</a>
+            <div class="article-content"><?php echo nl2br(safeText($article['content'])); ?></div>
+            <a class="article-link" href="<?php echo safeText($article['url']); ?>" target="_blank" rel="noopener noreferrer">Open original source</a>
         </article>
 
         <section class="ad-slot ad-middle">

@@ -71,12 +71,12 @@ function fetchRandomArticle(): array
     $defaultArticles = [
         [
             'title' => 'How URL Redirection Works',
-            'summary' => 'A quick overview of redirect flows, latency, and reliability basics.',
+            'content' => "URL redirection sends visitors from one URL to another URL.\n\nA server can redirect with status codes such as 301, 302, and 307, each with slightly different browser behavior.\n\nGood redirect chains should be short to reduce latency and improve user experience.",
             'url' => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Redirections',
         ],
         [
             'title' => 'HTTP Status Codes: 301, 302, and 307',
-            'summary' => 'Learn how each redirect code behaves and where to use them safely.',
+            'content' => "A 301 status usually means permanent redirect.\n\nA 302 is commonly used for temporary movement.\n\nA 307 keeps the method and body unchanged during redirect, which can matter for POST requests.",
             'url' => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Status',
         ],
     ];
@@ -95,16 +95,22 @@ function fetchRandomArticle(): array
     }
 
     $data = json_decode($response, true);
-    if (!is_array($data) || !isset($data['results']) || !is_array($data['results']) || count($data['results']) === 0) {
+    if (!is_array($data) || !isset($data['query']['pages']) || !is_array($data['query']['pages']) || count($data['query']['pages']) === 0) {
         return $defaultArticles[array_rand($defaultArticles)];
     }
 
-    $item = $data['results'][array_rand($data['results'])];
+    $pages = array_values($data['query']['pages']);
+    $item = $pages[array_rand($pages)];
+    $content = trim((string) ($item['extract'] ?? ''));
+
+    if ($content === '') {
+        return $defaultArticles[array_rand($defaultArticles)];
+    }
 
     return [
         'title' => (string) ($item['title'] ?? 'Featured Article'),
-        'summary' => (string) ($item['summary'] ?? 'Open the article for full details.'),
-        'url' => (string) ($item['url'] ?? 'https://example.com'),
+        'content' => $content,
+        'url' => (string) ($item['fullurl'] ?? 'https://en.wikipedia.org'),
     ];
 }
 
