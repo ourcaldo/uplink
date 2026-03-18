@@ -113,9 +113,16 @@ function fetchRandomArticle(): array
         $title = pathinfo($filePath, PATHINFO_FILENAME);
     }
 
+    // Prevent duplicated title in UI: the page already renders article title above body.
+    $content = preg_replace('/^\s*#\s+.+\n?/', '', $raw, 1);
+    $content = is_string($content) ? trim($content) : $raw;
+    if ($content === '') {
+        $content = $raw;
+    }
+
     return [
         'title' => $title,
-        'content' => $raw,
+        'content' => $content,
     ];
 }
 
