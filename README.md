@@ -22,7 +22,10 @@ This project implements a looping two-step gate flow:
 - Article: loaded from local markdown files in content/articles.
 - URL format: each article is shown on /{slug}.
 - Loop behavior: gate 1 -> gate 2 -> gate 1, with the next slug randomized and different from the current article.
-- Ads: each page selects random snippets from that gate's ad pool for top, middle, and bottom slots.
+- Ads: each page uses mandatory left and right sidebar ads (vertical when available).
+- Non-Adsense limit: maximum 5 gate-specific ads per page (2 sidebars + up to 3 content-slot ads).
+- Small banner stacking: when a selected banner is small, an additional ad can be stacked in the same slot if capacity remains.
+- Global Adsense: rendered separately and not counted in the 5-ad non-Adsense limit.
 
 ## Notes About Traffic Filtering
 

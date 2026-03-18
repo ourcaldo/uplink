@@ -52,7 +52,7 @@ if (!is_array($nextArticle)) {
 
 $nextUrl = rtrim($nextGateUrl, '/') . '/' . rawurlencode($nextArticle['slug']) . '?prev=' . rawurlencode((string) $article['slug']);
 
-$adSlots = pickAdSlots($adsByGate[$gate]);
+$pageAds = buildPageAds($adsByGate[$gate], $adsenseAds);
 
 ?>
 <!doctype html>
@@ -71,26 +71,57 @@ $adSlots = pickAdSlots($adsByGate[$gate]);
             <p>Article path: /<?php echo safeText((string) $article['slug']); ?></p>
         </header>
 
-        <section class="ad-slot ad-top">
-            <?php echo $adSlots['top']; ?>
-        </section>
+        <div class="content-layout">
+            <aside class="side-rail side-left">
+                <?php if ($pageAds['leftSidebar'] !== ''): ?>
+                    <div class="ad-unit"><?php echo $pageAds['leftSidebar']; ?></div>
+                <?php endif; ?>
+            </aside>
 
-        <article class="article-card">
-            <h2><?php echo safeText((string) $article['title']); ?></h2>
-            <div class="article-content markdown-body"><?php echo markdownToHtml((string) $article['content']); ?></div>
-        </article>
+            <section class="main-content">
+                <section class="ad-slot ad-top">
+                    <?php foreach ($pageAds['slots']['top'] as $adCode): ?>
+                        <div class="ad-unit"><?php echo $adCode; ?></div>
+                    <?php endforeach; ?>
+                    <?php if ($pageAds['adsense']['top'] !== ''): ?>
+                        <div class="ad-unit adsense-unit"><?php echo $pageAds['adsense']['top']; ?></div>
+                    <?php endif; ?>
+                </section>
 
-        <section class="ad-slot ad-middle">
-            <?php echo $adSlots['middle']; ?>
-        </section>
+                <article class="article-card">
+                    <h2><?php echo safeText((string) $article['title']); ?></h2>
+                    <div class="article-content markdown-body"><?php echo markdownToHtml((string) $article['content']); ?></div>
+                </article>
 
-        <section class="actions">
-            <a class="primary-btn" href="<?php echo safeText($nextUrl); ?>"><?php echo safeText($nextGateLabel); ?></a>
-        </section>
+                <section class="ad-slot ad-middle">
+                    <?php foreach ($pageAds['slots']['middle'] as $adCode): ?>
+                        <div class="ad-unit"><?php echo $adCode; ?></div>
+                    <?php endforeach; ?>
+                    <?php if ($pageAds['adsense']['middle'] !== ''): ?>
+                        <div class="ad-unit adsense-unit"><?php echo $pageAds['adsense']['middle']; ?></div>
+                    <?php endif; ?>
+                </section>
 
-        <section class="ad-slot ad-bottom">
-            <?php echo $adSlots['bottom']; ?>
-        </section>
+                <section class="actions">
+                    <a class="primary-btn" href="<?php echo safeText($nextUrl); ?>"><?php echo safeText($nextGateLabel); ?></a>
+                </section>
+
+                <section class="ad-slot ad-bottom">
+                    <?php foreach ($pageAds['slots']['bottom'] as $adCode): ?>
+                        <div class="ad-unit"><?php echo $adCode; ?></div>
+                    <?php endforeach; ?>
+                    <?php if ($pageAds['adsense']['bottom'] !== ''): ?>
+                        <div class="ad-unit adsense-unit"><?php echo $pageAds['adsense']['bottom']; ?></div>
+                    <?php endif; ?>
+                </section>
+            </section>
+
+            <aside class="side-rail side-right">
+                <?php if ($pageAds['rightSidebar'] !== ''): ?>
+                    <div class="ad-unit"><?php echo $pageAds['rightSidebar']; ?></div>
+                <?php endif; ?>
+            </aside>
+        </div>
     </main>
 </body>
 </html>

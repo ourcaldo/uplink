@@ -189,6 +189,171 @@ function pickAdSlots(array $adsPool): array
     ];
 }
 
+function isAdsenseAd(string $adCode): bool
+{
+    return strpos($adCode, 'googlesyndication.com/pagead/js/adsbygoogle.js') !== false
+        || strpos($adCode, 'class="adsbygoogle"') !== false;
+}
+
+function getAdDimensions(string $adCode): array
+{
+    $width = null;
+    $height = null;
+
+    if (preg_match('/"width"\s*:\s*(\d+)/', $adCode, $widthMatch) === 1) {
+        $width = (int) $widthMatch[1];
+    }
+
+    if (preg_match('/"height"\s*:\s*(\d+)/', $adCode, $heightMatch) === 1) {
+        $height = (int) $heightMatch[1];
+    }
+
+    return ['width' => $width, 'height' => $height];
+}
+
+function isVerticalAd(string $adCode): bool
+{
+    $dims = getAdDimensions($adCode);
+    if (!is_int($dims['width']) || !is_int($dims['height'])) {
+        return false;
+    }
+
+    return $dims['width'] <= 200 && $dims['height'] >= 250;
+}
+
+function isSmallBannerAd(string $adCode): bool
+{
+    $dims = getAdDimensions($adCode);
+    if (!is_int($dims['width']) || !is_int($dims['height'])) {
+        return false;
+    }
+
+    $area = $dims['width'] * $dims['height'];
+    return $dims['height'] <= 90 || $dims['width'] <= 320 || $area <= 45000;
+}
+
+function buildPageAds(array $gateAdsPool, array $adsensePool): array
+{
+    $nonAdsense = array_values(array_filter($gateAdsPool, static function ($adCode): bool {
+        return !isAdsenseAd((string) $adCode);
+    }));
+
+    $vertical = [];
+    $content = [];
+
+    foreach ($nonAdsense as $adCode) {
+        if (isVerticalAd($adCode)) {
+            $vertical[] = $adCode;
+            continue;
+        }
+
+        $content[] = $adCode;
+    }
+
+    shuffle($vertical);
+    shuffle($content);
+
+    $used = [];
+    $maxNonAdsense = 5;
+    $usedCount = 0;
+
+    $leftSidebar = '';
+    $rightSidebar = '';
+
+    $nextSidebar = static function () use (&$vertical, &$content, &$used): string {
+        while (count($vertical) > 0) {
+            $candidate = array_shift($vertical);
+            if (!isset($used[$candidate])) {
+                return $candidate;
+            }
+        }
+
+        while (count($content) > 0) {
+            $candidate = array_shift($content);
+            if (!isset($used[$candidate])) {
+                return $candidate;
+            }
+        }
+
+        return '';
+    };
+
+    $leftSidebar = $nextSidebar();
+    if ($leftSidebar !== '') {
+        $used[$leftSidebar] = true;
+        $usedCount++;
+    }
+
+    $rightSidebar = $nextSidebar();
+    if ($rightSidebar !== '') {
+        $used[$rightSidebar] = true;
+        $usedCount++;
+    }
+
+    $contentPool = [];
+    foreach (array_merge($content, $vertical) as $adCode) {
+        if (!isset($used[$adCode])) {
+            $contentPool[] = $adCode;
+        }
+    }
+
+    $nextContentAd = static function () use (&$contentPool, &$used): ?string {
+        while (count($contentPool) > 0) {
+            $candidate = array_shift($contentPool);
+            if (!isset($used[$candidate])) {
+                return $candidate;
+            }
+        }
+
+        return null;
+    };
+
+    $slots = [
+        'top' => [],
+        'middle' => [],
+        'bottom' => [],
+    ];
+
+    foreach (['top', 'middle', 'bottom'] as $slotName) {
+        if ($usedCount >= $maxNonAdsense) {
+            break;
+        }
+
+        $primary = $nextContentAd();
+        if ($primary === null) {
+            continue;
+        }
+
+        $slots[$slotName][] = $primary;
+        $used[$primary] = true;
+        $usedCount++;
+
+        if (isSmallBannerAd($primary) && $usedCount < $maxNonAdsense) {
+            $secondary = $nextContentAd();
+            if ($secondary !== null) {
+                $slots[$slotName][] = $secondary;
+                $used[$secondary] = true;
+                $usedCount++;
+            }
+        }
+    }
+
+    $adsenseShuffled = $adsensePool;
+    shuffle($adsenseShuffled);
+    $adsenseSlots = [
+        'top' => $adsenseShuffled[0] ?? '',
+        'middle' => $adsenseShuffled[1] ?? ($adsenseShuffled[0] ?? ''),
+        'bottom' => $adsenseShuffled[2] ?? ($adsenseShuffled[0] ?? ''),
+    ];
+
+    return [
+        'leftSidebar' => $leftSidebar,
+        'rightSidebar' => $rightSidebar,
+        'slots' => $slots,
+        'adsense' => $adsenseSlots,
+    ];
+}
+
 function safeText(string $value): string
 {
     return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
