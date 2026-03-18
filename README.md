@@ -14,11 +14,12 @@ This project implements a two-step gate flow:
 - redirect.php: Final redirect endpoint
 - lib/config.php: Gate URLs, destination URL, and ad inventories
 - lib/functions.php: Traffic filter, random article fetch, random ad slot selection
+- content/articles/: Local markdown article library (10 randomizable articles)
 - styles.css: Shared styling
 
 ## How Randomization Works
 
-- Article: fetched from Spaceflight News API and selected randomly.
+- Article: loaded from local markdown files in content/articles and selected randomly.
 - Ads: each page selects random snippets from that gate's ad pool for top, middle, and bottom slots.
 
 ## Notes About Traffic Filtering

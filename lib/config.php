@@ -6,7 +6,7 @@ const GATE_ONE_URL = 'https://alco.camarjaya.co.id';
 const GATE_TWO_URL = 'https://elco.camarjaya.co.id';
 const FINAL_DESTINATION_URL = 'https://example.com/final-destination';
 
-const ARTICLE_API_URL = 'https://en.wikipedia.org/w/api.php?action=query&generator=random&grnnamespace=0&grnlimit=1&prop=extracts|info&inprop=url&explaintext=1&exsectionformat=plain&format=json&origin=*';
+const ARTICLE_DIRECTORY = __DIR__ . '/../content/articles';
 
 $adsenseAds = [
     <<<'HTML'

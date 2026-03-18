@@ -72,45 +72,50 @@ function fetchRandomArticle(): array
         [
             'title' => 'How URL Redirection Works',
             'content' => "URL redirection sends visitors from one URL to another URL.\n\nA server can redirect with status codes such as 301, 302, and 307, each with slightly different browser behavior.\n\nGood redirect chains should be short to reduce latency and improve user experience.",
-            'url' => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Redirections',
         ],
         [
             'title' => 'HTTP Status Codes: 301, 302, and 307',
             'content' => "A 301 status usually means permanent redirect.\n\nA 302 is commonly used for temporary movement.\n\nA 307 keeps the method and body unchanged during redirect, which can matter for POST requests.",
-            'url' => 'https://developer.mozilla.org/en-US/docs/Web/HTTP/Status',
         ],
     ];
 
-    $context = stream_context_create([
-        'http' => [
-            'method' => 'GET',
-            'header' => "Accept: application/json\r\nUser-Agent: UPlink/1.0\r\n",
-            'timeout' => 5,
-        ],
-    ]);
-
-    $response = @file_get_contents(ARTICLE_API_URL, false, $context);
-    if ($response === false) {
+    $files = glob(ARTICLE_DIRECTORY . '/*.md');
+    if (!is_array($files) || count($files) === 0) {
         return $defaultArticles[array_rand($defaultArticles)];
     }
 
-    $data = json_decode($response, true);
-    if (!is_array($data) || !isset($data['query']['pages']) || !is_array($data['query']['pages']) || count($data['query']['pages']) === 0) {
+    $filePath = $files[array_rand($files)];
+    $raw = @file_get_contents($filePath);
+    if ($raw === false || trim($raw) === '') {
         return $defaultArticles[array_rand($defaultArticles)];
     }
 
-    $pages = array_values($data['query']['pages']);
-    $item = $pages[array_rand($pages)];
-    $content = trim((string) ($item['extract'] ?? ''));
+    $raw = trim(str_replace(["\r\n", "\r"], "\n", $raw));
+    $lines = explode("\n", $raw);
+    $title = '';
 
-    if ($content === '') {
-        return $defaultArticles[array_rand($defaultArticles)];
+    foreach ($lines as $line) {
+        $trimmed = trim($line);
+        if ($trimmed === '') {
+            continue;
+        }
+
+        if (strpos($trimmed, '# ') === 0) {
+            $title = trim(substr($trimmed, 2));
+            break;
+        }
+
+        $title = $trimmed;
+        break;
+    }
+
+    if ($title === '') {
+        $title = pathinfo($filePath, PATHINFO_FILENAME);
     }
 
     return [
-        'title' => (string) ($item['title'] ?? 'Featured Article'),
-        'content' => $content,
-        'url' => (string) ($item['fullurl'] ?? 'https://en.wikipedia.org'),
+        'title' => $title,
+        'content' => $raw,
     ];
 }
 
@@ -137,4 +142,43 @@ function pickAdSlots(array $adsPool): array
 function safeText(string $value): string
 {
     return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+
+function markdownToHtml(string $markdown): string
+{
+    $normalized = str_replace(["\r\n", "\r"], "\n", trim($markdown));
+    if ($normalized === '') {
+        return '';
+    }
+
+    $blocks = preg_split('/\n\s*\n/', $normalized) ?: [];
+    $html = [];
+
+    foreach ($blocks as $block) {
+        $block = trim($block);
+        if ($block === '') {
+            continue;
+        }
+
+        $escaped = safeText($block);
+
+        if (strpos($block, '### ') === 0) {
+            $html[] = '<h3>' . safeText(trim(substr($block, 4))) . '</h3>';
+            continue;
+        }
+
+        if (strpos($block, '## ') === 0) {
+            $html[] = '<h2>' . safeText(trim(substr($block, 3))) . '</h2>';
+            continue;
+        }
+
+        if (strpos($block, '# ') === 0) {
+            $html[] = '<h1>' . safeText(trim(substr($block, 2))) . '</h1>';
+            continue;
+        }
+
+        $html[] = '<p>' . nl2br($escaped) . '</p>';
+    }
+
+    return implode("\n", $html);
 }

@@ -13,3 +13,4 @@ These instructions apply to all coding tasks in this repository.
 - Keep commits small and focused.
 - Use clear commit messages that describe what changed and why.
 - Ensure pushes happen after each commit so all progress is tracked remotely.
+- Before every push, delete the previous project zip artifact, create a fresh zip of the current source, and include that zip file in the same commit.
