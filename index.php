@@ -2,11 +2,95 @@
 
 declare(strict_types=1);
 
-$host = strtolower($_SERVER['HTTP_HOST'] ?? '');
+require __DIR__ . '/lib/config.php';
+require __DIR__ . '/lib/functions.php';
 
-if (strpos($host, 'elco.camarjaya.co.id') !== false) {
-    require __DIR__ . '/elco.php';
+enforceTrafficFilter();
+
+$host = strtolower($_SERVER['HTTP_HOST'] ?? '');
+$gate = (strpos($host, 'elco.camarjaya.co.id') !== false) ? 'elco' : 'alco';
+$nextGateUrl = ($gate === 'alco') ? GATE_TWO_URL : GATE_ONE_URL;
+$nextGateLabel = ($gate === 'alco') ? 'Continue to Gate 2' : 'Continue to Gate 1';
+
+$catalog = getArticleCatalog();
+if (count($catalog) === 0) {
+    http_response_code(500);
+    header('Content-Type: text/plain; charset=utf-8');
+    echo 'No article files found in content/articles.';
     exit;
 }
 
-require __DIR__ . '/alco.php';
+$requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+$requestPath = is_string($requestPath) ? trim($requestPath, '/') : '';
+$requestedSlug = strtolower(rawurldecode($requestPath));
+$requestedSlug = trim($requestedSlug);
+
+$previousSlug = strtolower(trim((string) ($_GET['prev'] ?? '')));
+
+$article = null;
+if ($requestedSlug !== '') {
+    $article = getArticleBySlug($catalog, $requestedSlug);
+}
+
+if (!is_array($article)) {
+    $random = pickRandomArticle($catalog, [$previousSlug]);
+    if (!is_array($random)) {
+        http_response_code(500);
+        header('Content-Type: text/plain; charset=utf-8');
+        echo 'Unable to pick random article.';
+        exit;
+    }
+
+    header('Location: /' . rawurlencode($random['slug']), true, 302);
+    exit;
+}
+
+$nextArticle = pickRandomArticle($catalog, [$article['slug'], $previousSlug]);
+if (!is_array($nextArticle)) {
+    $nextArticle = $article;
+}
+
+$nextUrl = rtrim($nextGateUrl, '/') . '/' . rawurlencode($nextArticle['slug']) . '?prev=' . rawurlencode((string) $article['slug']);
+
+$adSlots = pickAdSlots($adsByGate[$gate]);
+
+?>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><?php echo ($gate === 'alco') ? 'UPlink Gate 1' : 'UPlink Gate 2'; ?></title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <main class="page-wrap">
+        <header class="hero">
+            <p class="badge"><?php echo safeText($host); ?></p>
+            <h1><?php echo ($gate === 'alco') ? 'Gate 1' : 'Gate 2'; ?></h1>
+            <p>Article path: /<?php echo safeText((string) $article['slug']); ?></p>
+        </header>
+
+        <section class="ad-slot ad-top">
+            <?php echo $adSlots['top']; ?>
+        </section>
+
+        <article class="article-card">
+            <h2><?php echo safeText((string) $article['title']); ?></h2>
+            <div class="article-content markdown-body"><?php echo markdownToHtml((string) $article['content']); ?></div>
+        </article>
+
+        <section class="ad-slot ad-middle">
+            <?php echo $adSlots['middle']; ?>
+        </section>
+
+        <section class="actions">
+            <a class="primary-btn" href="<?php echo safeText($nextUrl); ?>"><?php echo safeText($nextGateLabel); ?></a>
+        </section>
+
+        <section class="ad-slot ad-bottom">
+            <?php echo $adSlots['bottom']; ?>
+        </section>
+    </main>
+</body>
+</html>

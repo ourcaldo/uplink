@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 const GATE_ONE_URL = 'https://alco.camarjaya.co.id';
 const GATE_TWO_URL = 'https://elco.camarjaya.co.id';
-const FINAL_DESTINATION_URL = 'https://example.com/final-destination';
 
 const ARTICLE_DIRECTORY = __DIR__ . '/../content/articles';
 

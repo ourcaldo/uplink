@@ -66,28 +66,11 @@ function enforceTrafficFilter(): void
     exit;
 }
 
-function fetchRandomArticle(): array
+function parseArticleFromFile(string $filePath): ?array
 {
-    $defaultArticles = [
-        [
-            'title' => 'How URL Redirection Works',
-            'content' => "URL redirection sends visitors from one URL to another URL.\n\nA server can redirect with status codes such as 301, 302, and 307, each with slightly different browser behavior.\n\nGood redirect chains should be short to reduce latency and improve user experience.",
-        ],
-        [
-            'title' => 'HTTP Status Codes: 301, 302, and 307',
-            'content' => "A 301 status usually means permanent redirect.\n\nA 302 is commonly used for temporary movement.\n\nA 307 keeps the method and body unchanged during redirect, which can matter for POST requests.",
-        ],
-    ];
-
-    $files = glob(ARTICLE_DIRECTORY . '/*.md');
-    if (!is_array($files) || count($files) === 0) {
-        return $defaultArticles[array_rand($defaultArticles)];
-    }
-
-    $filePath = $files[array_rand($files)];
     $raw = @file_get_contents($filePath);
     if ($raw === false || trim($raw) === '') {
-        return $defaultArticles[array_rand($defaultArticles)];
+        return null;
     }
 
     $raw = trim(str_replace(["\r\n", "\r"], "\n", $raw));
@@ -120,10 +103,70 @@ function fetchRandomArticle(): array
         $content = $raw;
     }
 
+    $slug = strtolower((string) pathinfo($filePath, PATHINFO_FILENAME));
+    $slug = preg_replace('/[^a-z0-9\-]/', '-', $slug);
+    $slug = preg_replace('/-+/', '-', (string) $slug);
+    $slug = trim((string) $slug, '-');
+    if ($slug === '') {
+        return null;
+    }
+
     return [
+        'slug' => $slug,
         'title' => $title,
         'content' => $content,
     ];
+}
+
+function getArticleCatalog(): array
+{
+    $files = glob(ARTICLE_DIRECTORY . '/*.md');
+    if (!is_array($files) || count($files) === 0) {
+        return [];
+    }
+
+    $catalog = [];
+    foreach ($files as $filePath) {
+        $article = parseArticleFromFile($filePath);
+        if (!is_array($article)) {
+            continue;
+        }
+
+        $catalog[$article['slug']] = $article;
+    }
+
+    return $catalog;
+}
+
+function getArticleBySlug(array $catalog, string $slug): ?array
+{
+    $normalized = strtolower(trim($slug));
+    if ($normalized === '' || !isset($catalog[$normalized])) {
+        return null;
+    }
+
+    return $catalog[$normalized];
+}
+
+function pickRandomArticle(array $catalog, array $excludeSlugs = []): ?array
+{
+    if (count($catalog) === 0) {
+        return null;
+    }
+
+    $exclude = array_fill_keys(array_map('strtolower', $excludeSlugs), true);
+    $pool = [];
+    foreach ($catalog as $slug => $article) {
+        if (!isset($exclude[strtolower((string) $slug)])) {
+            $pool[] = $article;
+        }
+    }
+
+    if (count($pool) === 0) {
+        $pool = array_values($catalog);
+    }
+
+    return $pool[array_rand($pool)] ?? null;
 }
 
 function pickAdSlots(array $adsPool): array

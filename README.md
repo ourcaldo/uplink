@@ -1,25 +1,27 @@
 # UPlink PHP Gate Flow
 
-This project implements a two-step gate flow:
+This project implements a looping two-step gate flow:
 
 1. Gate 1 at alco.camarjaya.co.id
 2. Gate 2 at elco.camarjaya.co.id
-3. Final redirect to a hardcoded destination URL
+3. Loop back to gate 1 and continue looping
 
 ## Files
 
-- index.php: Host-based router (alco host -> gate 1, elco host -> gate 2)
-- alco.php: Gate 1 page
-- elco.php: Gate 2 page
-- redirect.php: Final redirect endpoint
-- lib/config.php: Gate URLs, destination URL, and ad inventories
-- lib/functions.php: Traffic filter, random article fetch, random ad slot selection
+- index.php: Host-based + slug-based renderer (domain.com/{slug})
+- alco.php: Legacy endpoint redirecting to /
+- elco.php: Legacy endpoint redirecting to /
+- lib/config.php: Gate URLs and ad inventories
+- lib/functions.php: Traffic filter, article catalog/slug helpers, random ad slot selection
 - content/articles/: Local markdown article library (10 randomizable articles)
+- .htaccess: Apache rewrite rules for slug routing
 - styles.css: Shared styling
 
 ## How Randomization Works
 
-- Article: loaded from local markdown files in content/articles and selected randomly.
+- Article: loaded from local markdown files in content/articles.
+- URL format: each article is shown on /{slug}.
+- Loop behavior: gate 1 -> gate 2 -> gate 1, with the next slug randomized and different from the current article.
 - Ads: each page selects random snippets from that gate's ad pool for top, middle, and bottom slots.
 
 ## Notes About Traffic Filtering
@@ -32,5 +34,5 @@ For stronger filtering, place Cloudflare Bot Management or an equivalent WAF in 
 
 1. Point both domains to this codebase.
 2. Ensure PHP 8+ is enabled.
-3. Update FINAL_DESTINATION_URL in lib/config.php.
-4. Set your vhost document root to this folder so index.php handles host routing.
+3. Set your vhost document root to this folder so index.php handles host + slug routing.
+4. If using Apache, enable mod_rewrite (uses .htaccess).
