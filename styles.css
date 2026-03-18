@@ -21,9 +21,33 @@ body {
 }
 
 .page-wrap {
-  max-width: 980px;
+  max-width: 1280px;
   margin: 24px auto;
   padding: 16px;
+}
+
+.content-layout {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr) 180px;
+  gap: 16px;
+  align-items: start;
+}
+
+.main-content {
+  min-width: 0;
+}
+
+.side-rail {
+  position: sticky;
+  top: 16px;
+}
+
+.non-display-ads {
+  margin-bottom: 16px;
+}
+
+.non-display-ad + .non-display-ad {
+  margin-top: 10px;
 }
 
 .hero {
@@ -123,6 +147,15 @@ body {
   overflow-x: auto;
 }
 
+.ad-unit + .ad-unit {
+  margin-top: 12px;
+}
+
+.adsense-unit {
+  border-top: 1px dashed #d1d5db;
+  padding-top: 12px;
+}
+
 @media (max-width: 640px) {
   .hero h1 {
     font-size: 22px;
@@ -131,5 +164,13 @@ body {
   .page-wrap {
     margin: 12px auto;
     padding: 10px;
+  }
+
+  .content-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .side-rail {
+    position: static;
   }
 }

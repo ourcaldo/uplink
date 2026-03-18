@@ -232,16 +232,34 @@ function isSmallBannerAd(string $adCode): bool
     return $dims['height'] <= 90 || $dims['width'] <= 320 || $area <= 45000;
 }
 
+function isIframeFormatAd(string $adCode): bool
+{
+    return strpos($adCode, '"format":"iframe"') !== false
+        || strpos($adCode, "'format' : 'iframe'") !== false
+        || strpos($adCode, '"format" : "iframe"') !== false;
+}
+
 function buildPageAds(array $gateAdsPool, array $adsensePool): array
 {
     $nonAdsense = array_values(array_filter($gateAdsPool, static function ($adCode): bool {
         return !isAdsenseAd((string) $adCode);
     }));
 
+    $nonDisplayAds = [];
+    $displayAds = [];
+    foreach ($nonAdsense as $adCode) {
+        if (isIframeFormatAd((string) $adCode)) {
+            $displayAds[] = $adCode;
+            continue;
+        }
+
+        $nonDisplayAds[] = $adCode;
+    }
+
     $vertical = [];
     $content = [];
 
-    foreach ($nonAdsense as $adCode) {
+    foreach ($displayAds as $adCode) {
         if (isVerticalAd($adCode)) {
             $vertical[] = $adCode;
             continue;
@@ -347,6 +365,7 @@ function buildPageAds(array $gateAdsPool, array $adsensePool): array
     ];
 
     return [
+        'nonDisplay' => $nonDisplayAds,
         'leftSidebar' => $leftSidebar,
         'rightSidebar' => $rightSidebar,
         'slots' => $slots,

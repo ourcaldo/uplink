@@ -71,6 +71,14 @@ $pageAds = buildPageAds($adsByGate[$gate], $adsenseAds);
             <p>Article path: /<?php echo safeText((string) $article['slug']); ?></p>
         </header>
 
+        <?php if (count($pageAds['nonDisplay']) > 0): ?>
+            <section class="non-display-ads">
+                <?php foreach ($pageAds['nonDisplay'] as $adCode): ?>
+                    <div class="non-display-ad"><?php echo $adCode; ?></div>
+                <?php endforeach; ?>
+            </section>
+        <?php endif; ?>
+
         <div class="content-layout">
             <aside class="side-rail side-left">
                 <?php if ($pageAds['leftSidebar'] !== ''): ?>
