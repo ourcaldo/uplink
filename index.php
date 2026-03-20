@@ -9,8 +9,8 @@ enforceTrafficFilter();
 
 $host = strtolower($_SERVER['HTTP_HOST'] ?? '');
 $gate = (strpos($host, 'elco.camarjaya.co.id') !== false) ? 'elco' : 'alco';
-$nextGateUrl = ($gate === 'alco') ? GATE_TWO_URL : GATE_ONE_URL;
-$nextGateLabel = ($gate === 'alco') ? 'Continue to Gate 2' : 'Continue to Gate 1';
+$nextUrl = 'https://app.camarjaya.co.id/';
+$nextGateLabel = 'Continue';
 
 $catalog = getArticleCatalog();
 if (count($catalog) === 0) {
@@ -44,13 +44,6 @@ if (!is_array($article)) {
     header('Location: /' . rawurlencode($random['slug']), true, 302);
     exit;
 }
-
-$nextArticle = pickRandomArticle($catalog, [$article['slug'], $previousSlug]);
-if (!is_array($nextArticle)) {
-    $nextArticle = $article;
-}
-
-$nextUrl = rtrim($nextGateUrl, '/') . '/' . rawurlencode($nextArticle['slug']) . '?prev=' . rawurlencode((string) $article['slug']);
 
 $pageAds = buildPageAds($adsByGate[$gate], $adsenseAds);
 $gateTitle = ($gate === 'alco') ? 'Gate 1' : 'Gate 2';
