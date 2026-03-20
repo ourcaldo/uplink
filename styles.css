@@ -140,16 +140,22 @@ body {
 }
 
 .actions {
-  display: flex;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: max-content;
   justify-content: center;
   align-items: center;
   gap: 10px;
-  flex-wrap: nowrap;
   overflow-x: auto;
+  white-space: nowrap;
 }
 
 .inline-smartlink {
   display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.action-btn {
   flex: 0 0 auto;
 }
 

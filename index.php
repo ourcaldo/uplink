@@ -58,6 +58,7 @@ $pageTitle = (string) $article['title'] . ' | ' . $gateTitle;
     <title><?php echo safeText($pageTitle); ?></title>
     <meta name="title" content="<?php echo safeText($pageTitle); ?>">
     <meta property="og:title" content="<?php echo safeText($pageTitle); ?>">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7705241191817847" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
@@ -108,9 +109,9 @@ $pageTitle = (string) $article['title'] . ' | ' . $gateTitle;
                 </section>
 
                 <section class="actions">
-                    <a class="primary-btn" href="<?php echo safeText($nextUrl); ?>"><?php echo safeText($nextGateLabel); ?></a>
+                    <a class="primary-btn action-btn" href="<?php echo safeText($nextUrl); ?>"><?php echo safeText($nextGateLabel); ?></a>
                     <?php if (($pageAds['smartlink'] ?? '') !== ''): ?>
-                        <div class="inline-smartlink"><?php echo $pageAds['smartlink']; ?></div>
+                        <div class="inline-smartlink action-btn"><?php echo $pageAds['smartlink']; ?></div>
                     <?php endif; ?>
                 </section>
 
