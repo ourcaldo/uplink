@@ -5,5 +5,12 @@ RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
+# Route /ads*.html to gate-specific ads directory based on hostname.
+RewriteCond %{HTTP_HOST} ^elco\. [NC]
+RewriteRule ^(ads\d*\.html)$ ads/elco/$1 [L]
+
+RewriteCond %{HTTP_HOST} ^alco\. [NC]
+RewriteRule ^(ads\d*\.html)$ ads/alco/$1 [L]
+
 # Route slug URLs to the PHP entrypoint.
 RewriteRule ^ index.php [L,QSA]

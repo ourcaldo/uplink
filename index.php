@@ -64,9 +64,7 @@ $pageTitle = (string) $article['title'] . ' | ' . $gateTitle;
 <body>
     <main class="page-wrap">
         <header class="hero">
-            <p class="badge"><?php echo safeText($host); ?></p>
-            <h1><?php echo safeText($gateTitle); ?></h1>
-            <p>Article path: /<?php echo safeText((string) $article['slug']); ?></p>
+            <h1><?php echo safeText((string) $article['title']); ?></h1>
         </header>
 
         <?php if (count($pageAds['nonDisplay']) > 0): ?>
